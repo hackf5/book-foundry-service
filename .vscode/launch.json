@@ -1,0 +1,29 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Web Api",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build debug",
+            "program": "${workspaceFolder}/src/HackF5.BookFoundry.Service.WebApi/.bin/Debug/net7.0/HackF5.BookFoundry.Service.WebApi.dll",
+            "args": [
+            ],
+            "cwd": "${workspaceFolder}/src/HackF5.BookFoundry.Service.WebApi",
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development",
+                "ENSURE_DATABASE_CREATED": "1",
+            },
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+                "uriFormat": "%s/",
+            },
+            "stopAtEntry": false,
+            "console": "internalConsole",
+            "logging": {
+                "moduleLoad": false,
+            }
+        },
+    ],
+}
