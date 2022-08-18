@@ -6,4 +6,21 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Include="..\SharedAssemblyInfo.cs" Link="SharedAssemblyInfo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="dotenv.net" Version="3.1.1" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="HotChocolate.AspNetCore" Version="12.12.1" />
+    <PackageReference Include="Articulum.Core.Data" Version="0.1.26" />
+    <PackageReference Include="Articulum.Core.Data.EntityFramework" Version="0.1.26" />
+    <PackageReference Include="Articulum.Core.GraphQL" Version="0.1.26" />
+    <PackageReference Include="Articulum.Core.WebApi" Version="0.1.26" />
+  </ItemGroup>
+
 </Project>
