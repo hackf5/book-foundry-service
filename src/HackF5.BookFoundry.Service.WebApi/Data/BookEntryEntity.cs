@@ -2,7 +2,7 @@ namespace HackF5.BookFoundry.Service.WebApi.Data;
 
 using System.ComponentModel.DataAnnotations.Schema;
 
-[Index(nameof(Name), IsUnique = true)]
+[Index(nameof(BookId), nameof(Name), IsUnique = true)]
 public class BookEntryEntity : NamedEntityBase
 {
     [ForeignKey(nameof(Book))]
