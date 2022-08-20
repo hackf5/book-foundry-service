@@ -15,9 +15,16 @@ public class BookEntryEntity : NamedEntityBase
 
     public virtual BookEntryEntity? NextEntry { get; set; }
 
+    [NotMapped]
     public BookEntryEntity? PreviousEntry => this.Book.Entries.FirstOrDefault(x => x.NextEntry == this);
 
     public virtual ICollection<BookEntryRevisionEntity> Revisions { get; } = new HashSet<BookEntryRevisionEntity>();
 
     public virtual ICollection<BookEntryTagEntity> Tags { get; } = new HashSet<BookEntryTagEntity>();
+
+    [NotMapped]
+    public BookEntryRevisionEntity LatestRevision => this.Revisions.OrderByDescending(x => x.Id).First();
+
+    [NotMapped]
+    public BookEntryRevisionEntity ActiveRevision => this.Revisions.First(x => x.Active);
 }
