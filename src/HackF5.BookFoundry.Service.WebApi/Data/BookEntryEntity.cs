@@ -19,5 +19,5 @@ public class BookEntryEntity : NamedEntityBase
 
     public virtual ICollection<BookEntryRevisionEntity> Revisions { get; } = new HashSet<BookEntryRevisionEntity>();
 
-    public virtual ICollection<TagEntity> Tags { get; } = new HashSet<TagEntity>();
+    public virtual ICollection<BookEntryTagEntity> Tags { get; } = new HashSet<BookEntryTagEntity>();
 }

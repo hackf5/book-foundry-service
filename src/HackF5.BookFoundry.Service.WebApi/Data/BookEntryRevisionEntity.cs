@@ -10,6 +10,7 @@ public class BookEntryRevisionEntity : EntityBase
 
     public bool Active { get; set; } = default!;
 
+    [GraphQLIgnore]
     public virtual NpgsqlTsVector SearchVector { get; } = default!;
 
     [ForeignKey(nameof(Entry))]

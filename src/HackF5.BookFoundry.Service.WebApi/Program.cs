@@ -3,6 +3,7 @@ using Articulum.Core.WebApi;
 using dotenv.net;
 
 using HackF5.BookFoundry.Service.WebApi.Data;
+using HackF5.BookFoundry.Service.WebApi.GraphQL;
 
 DotEnv
     .Fluent()
@@ -19,8 +20,10 @@ builder
     .Services
     .AddCors()
     .AddNpgsqlDbContext<ApplicationDbContext>(
-    connectionString,
-    new() { NpgsqlOptionsAction = o => o.UseNetTopologySuite() });
+        connectionString,
+        new() { NpgsqlOptionsAction = o => o.UseNetTopologySuite() })
+    .AddGraphQLServer()
+    .BuildDefaultSchema();
 
 var app = builder.Build();
 
