@@ -70,6 +70,40 @@ public class BookMutation
         }
     }
 
+    public async Task<SetPreviousEntryOutput> SetPreviousEntryAsync(
+        SetPreviousEntryInput input,
+        [Service] ApplicationDbContext ctx,
+        IResolverContext context,
+        CancellationToken cancellation)
+    {
+        try
+        {
+            var entry = await ctx.Entries.FirstAsync(x => x.Id == input.EntryId, cancellation);
+            var previousEntry = await ctx.Entries.FirstAsync(x => x.Id == input.PreviousEntryId, cancellation);
+
+            if (entry.Book != previousEntry.Book)
+            {
+                throw new InvalidOperationException("Book mismatch.");
+            }
+
+            if (entry.PreviousEntry != null)
+            {
+                entry.PreviousEntry.NextEntry = entry.NextEntry;
+            }
+
+            entry.NextEntry = previousEntry.NextEntry;
+            previousEntry.NextEntry = entry;
+
+            await ctx.SaveChangesAsync(cancellation);
+
+            return new(entry.Id);
+        }
+        catch (Exception ex)
+        {
+            throw QueryMessageException.New("An error occurred while setting the previous entry.", ex, context);
+        }
+    }
+
     public async Task<CreateRevisionOutput> CreateRevisionAsync(
         CreateRevisionInput input,
         [Service] ApplicationDbContext ctx,
@@ -90,6 +124,8 @@ public class BookMutation
             revision.Entry = entry;
             revision.Text = activeRevision.Text;
 
+            await ctx.SaveChangesAsync(cancellation);
+
             return new(revision.Id);
         }
         catch (Exception ex)
@@ -109,6 +145,37 @@ public class BookMutation
             var entry = await ctx.Entries.FirstAsync(x => x.Id == input.EntryId, cancellation);
             var revision = entry.LatestRevision;
             revision.Text = input.Text;
+
+            await ctx.SaveChangesAsync(cancellation);
+
+            return new(revision.Id);
+        }
+        catch (Exception ex)
+        {
+            throw QueryMessageException.New("An error occurred while updating the revision.", ex, context);
+        }
+    }
+
+    public async Task<ActivateRevisionOutput> ActivateRevisionAsync(
+        ActivateRevisionInput input,
+        [Service] ApplicationDbContext ctx,
+        IResolverContext context,
+        CancellationToken cancellation)
+    {
+        try
+        {
+            var revision = await ctx.Revisions
+                .Include(x => x.Entry.Revisions)
+                .FirstAsync(x => x.Id == input.RevisionId, cancellation);
+
+            foreach (var r in revision.Entry.Revisions)
+            {
+                r.Active = false;
+            }
+
+            revision.Active = true;
+
+            await ctx.SaveChangesAsync(cancellation);
 
             return new(revision.Id);
         }
