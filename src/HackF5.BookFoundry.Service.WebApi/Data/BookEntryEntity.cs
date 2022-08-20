@@ -18,4 +18,6 @@ public class BookEntryEntity : NamedEntityBase
     public BookEntryEntity? PreviousEntry => this.Book.Entries.FirstOrDefault(x => x.NextEntry == this);
 
     public virtual ICollection<BookEntryRevisionEntity> Revisions { get; } = new HashSet<BookEntryRevisionEntity>();
+
+    public virtual ICollection<TagEntity> Tags { get; } = new HashSet<TagEntity>();
 }

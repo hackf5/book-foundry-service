@@ -2,9 +2,15 @@ namespace HackF5.BookFoundry.Service.WebApi.Data;
 
 using System.ComponentModel.DataAnnotations.Schema;
 
+using NpgsqlTypes;
+
 public class BookEntryRevisionEntity : EntityBase
 {
     public string Text { get; set; } = default!;
+
+    public bool Active { get; set; } = default!;
+
+    public virtual NpgsqlTsVector SearchVector { get; } = default!;
 
     [ForeignKey(nameof(Entry))]
     public int EntryId { get; set; }

@@ -6,6 +6,7 @@
     "omnisharp.enableImportCompletion": true,
 
     "cSpell.words": [
-        "Articulum"
+        "Articulum",
+        "Npgsql"
     ]
 }
