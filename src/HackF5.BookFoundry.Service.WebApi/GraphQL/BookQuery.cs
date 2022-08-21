@@ -4,10 +4,15 @@ using Articulum.Core.GraphQL;
 
 using HackF5.BookFoundry.Service.WebApi.Data;
 
+using HotChocolate.Data;
+
 #pragma warning disable CA1822 // mark member as static
 
 [ExtendObjectType(typeof(RootQuery))]
 public class BookQuery
 {
+    [UsePaging]
+    [UseFiltering]
+    [UseSorting]
     public IQueryable<BookEntity> GetBooks([Service] ApplicationDbContext ctx) => ctx.Books;
 }
