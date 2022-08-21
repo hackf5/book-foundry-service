@@ -11,8 +11,18 @@ using HotChocolate.Data;
 [ExtendObjectType(typeof(RootQuery))]
 public class BookQuery
 {
-    [UsePaging]
+    [UseOffsetPaging(IncludeTotalCount = true)]
     [UseFiltering]
     [UseSorting]
     public IQueryable<BookEntity> GetBooks([Service] ApplicationDbContext ctx) => ctx.Books;
+
+    [UseOffsetPaging(IncludeTotalCount = true)]
+    [UseFiltering]
+    [UseSorting]
+    public IQueryable<BookEntryEntity> GetEntries([Service] ApplicationDbContext ctx) => ctx.Entries;
+
+    [UseOffsetPaging(IncludeTotalCount = true)]
+    [UseFiltering]
+    [UseSorting]
+    public IQueryable<BookEntryRevisionEntity> GetRevisions([Service] ApplicationDbContext ctx) => ctx.Revisions;
 }

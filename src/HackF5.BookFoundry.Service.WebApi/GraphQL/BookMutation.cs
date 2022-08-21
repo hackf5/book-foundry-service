@@ -113,7 +113,6 @@ public class BookMutation
         try
         {
             var entry = await ctx.Entries.FirstAsync(x => x.Id == input.EntryId, cancellation);
-            var activeRevision = entry.ActiveRevision;
             foreach (var r in entry.Revisions)
             {
                 r.Active = false;
@@ -122,11 +121,14 @@ public class BookMutation
             var revision = ctx.Revisions.AddProxy();
             revision.Active = true;
             revision.Entry = entry;
-            revision.Text = activeRevision.Text;
+            revision.Text = input.Text;
 
             await ctx.SaveChangesAsync(cancellation);
 
-            return new(revision.Id);
+            return new(
+                revision.Entry.BookId,
+                revision.EntryId,
+                revision.Id);
         }
         catch (Exception ex)
         {
@@ -148,7 +150,10 @@ public class BookMutation
 
             await ctx.SaveChangesAsync(cancellation);
 
-            return new(revision.Id);
+            return new(
+                revision.Entry.BookId,
+                revision.EntryId,
+                revision.Id);
         }
         catch (Exception ex)
         {
