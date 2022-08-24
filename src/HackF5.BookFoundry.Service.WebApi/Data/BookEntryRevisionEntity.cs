@@ -10,6 +10,14 @@ public class BookEntryRevisionEntity : EntityBase
 
     public bool Active { get; set; } = default!;
 
+#pragma warning disable
+    [GraphQLIgnore]
+    public virtual uint xmin { get; }
+#pragma warning restore
+
+    [NotMapped]
+    public uint ConcurrencyToken => this.xmin;
+
     [GraphQLIgnore]
     public virtual NpgsqlTsVector SearchVector { get; } = default!;
 

@@ -5,6 +5,7 @@ using Articulum.Core.GraphQL;
 using HackF5.BookFoundry.Service.WebApi.Data;
 using HackF5.BookFoundry.Service.WebApi.GraphQL.Model;
 
+using HotChocolate.Execution;
 using HotChocolate.Resolvers;
 
 [ExtendObjectType(typeof(RootMutation))]
@@ -128,7 +129,8 @@ public class BookMutation
             return new(
                 revision.Entry.BookId,
                 revision.EntryId,
-                revision.Id);
+                revision.Id,
+                revision.ConcurrencyToken);
         }
         catch (Exception ex)
         {
@@ -146,6 +148,17 @@ public class BookMutation
         {
             var entry = await ctx.Entries.FirstAsync(x => x.Id == input.EntryId, cancellation);
             var revision = entry.LatestRevision;
+
+            if (revision.ConcurrencyToken != input.ConcurrencyToken)
+            {
+                throw new QueryException(
+                    ErrorBuilder.New()
+                    .SetMessage($"Concurrency token mismatch when updating revision {revision.Id}")
+                    .SetCode(nameof(revision.ConcurrencyToken))
+                    .SetPath(context.Path)
+                    .Build());
+            }
+
             revision.Text = input.Text;
 
             await ctx.SaveChangesAsync(cancellation);
@@ -153,7 +166,12 @@ public class BookMutation
             return new(
                 revision.Entry.BookId,
                 revision.EntryId,
-                revision.Id);
+                revision.Id,
+                revision.ConcurrencyToken);
+        }
+        catch (QueryException)
+        {
+            throw;
         }
         catch (Exception ex)
         {

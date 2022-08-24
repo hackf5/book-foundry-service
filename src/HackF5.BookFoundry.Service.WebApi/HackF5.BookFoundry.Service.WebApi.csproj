@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="dotenv.net" Version="3.1.1" />
+    <PackageReference Include="HotChocolate.Types.Scalars" Version="12.12.1" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>

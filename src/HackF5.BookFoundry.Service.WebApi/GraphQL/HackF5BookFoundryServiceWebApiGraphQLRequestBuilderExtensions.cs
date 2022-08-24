@@ -24,6 +24,8 @@ public static class HackF5BookFoundryServiceWebApiGraphQLRequestBuilderExtension
 
     private static IRequestExecutorBuilder RegisterServices(this IRequestExecutorBuilder builder)
     {
+        builder.BindRuntimeType<uint, UnsignedIntType>();
+
         return builder;
     }
 }

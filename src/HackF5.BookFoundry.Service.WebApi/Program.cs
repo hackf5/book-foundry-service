@@ -52,6 +52,4 @@ if (app.Environment.IsDevelopment())
 
 await app.StartAsync();
 
-app.SetBaseUri();
-
 await app.WaitForShutdownAsync();
