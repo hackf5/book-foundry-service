@@ -9,6 +9,7 @@
         "Articulum",
         "ASPNETCORE",
         "Npgsql",
+        "Serilog",
         "xmin"
     ]
 }

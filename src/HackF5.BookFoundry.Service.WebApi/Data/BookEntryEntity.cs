@@ -3,6 +3,7 @@ namespace HackF5.BookFoundry.Service.WebApi.Data;
 using System.ComponentModel.DataAnnotations.Schema;
 
 [Index(nameof(BookId), nameof(Name), IsUnique = true)]
+[Index(nameof(BookId), nameof(Index), IsUnique = true)]
 public class BookEntryEntity : NamedEntityBase
 {
     [ForeignKey(nameof(Book))]
@@ -10,13 +11,19 @@ public class BookEntryEntity : NamedEntityBase
 
     public virtual BookEntity Book { get; set; } = default!;
 
-    [ForeignKey(nameof(NextEntry))]
-    public int? NextEntryId { get; set; }
-
-    public virtual BookEntryEntity? NextEntry { get; set; }
+    public int Index { get; set; }
 
     [NotMapped]
-    public BookEntryEntity? PreviousEntry => this.Book.Entries.FirstOrDefault(x => x.NextEntry == this);
+    public BookEntryEntity? Next => this.Book.Entries
+        .OrderBy(x => x.Index)
+        .SkipWhile(x => x.Index <= this.Index)
+        .FirstOrDefault();
+
+    [NotMapped]
+    public BookEntryEntity? Previous => this.Book.Entries
+        .OrderByDescending(x => x.Index)
+        .SkipWhile(x => x.Index >= this.Index)
+        .FirstOrDefault();
 
     public virtual ICollection<BookEntryRevisionEntity> Revisions { get; } = new HashSet<BookEntryRevisionEntity>();
 

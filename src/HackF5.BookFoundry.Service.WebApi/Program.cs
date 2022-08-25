@@ -10,18 +10,24 @@ DotEnv
     .WithProbeForEnv(15)
     .Load();
 
+SerilogUtilities.InitializeLogger();
+SerilogUtilities.ExcludeRequestPathPredicate = path => path.StartsWith("/graphql", StringComparison.Ordinal);
+
 var connectionString = Environment.GetEnvironmentVariable("POSTGRESQL_CONNECTION_STRING")
     ?? throw new InvalidOperationException(
         $"Connection string environment variable not defined 'POSTGRESQL_CONNECTION_STRING'.");
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.UseSerilog();
+
 builder
     .Services
     .AddCors()
+    .UseMinimalHttpClientLogging()
     .AddNpgsqlDbContext<ApplicationDbContext>(
         connectionString,
-        new() { NpgsqlOptionsAction = o => o.UseNetTopologySuite() })
+        new() { NpgsqlOptionsAction = o => { } })
     .AddGraphQLServer()
     .BuildDefaultSchema();
 
@@ -36,6 +42,7 @@ app.UseCors(
 app
     .UseHttpsRedirection()
     .UseRouting()
+    .UseSerilog()
     .UseEndpoints(eb => eb.MapGraphQL());
 
 if (app.Environment.IsDevelopment())
