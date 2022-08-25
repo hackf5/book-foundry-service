@@ -8,8 +8,6 @@ public class BookEntryRevisionEntity : EntityBase
 {
     public string Text { get; set; } = default!;
 
-    public bool Active { get; set; } = default!;
-
 #pragma warning disable
     [GraphQLIgnore]
     public virtual uint xmin { get; }

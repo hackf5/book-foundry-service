@@ -30,12 +30,6 @@ public class ApplicationDbContext : ApplicationDbContextBase
 
         modelBuilder
             .Entity<BookEntryRevisionEntity>()
-            .HasIndex(x => x.EntryId)
-            .HasFilter($"\"{nameof(BookEntryRevisionEntity.Active).ToDataName()}\" = true")
-            .IsUnique();
-
-        modelBuilder
-            .Entity<BookEntryRevisionEntity>()
             .UseXminAsConcurrencyToken();
     }
 }

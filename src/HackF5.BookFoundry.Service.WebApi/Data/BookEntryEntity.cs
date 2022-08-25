@@ -31,7 +31,4 @@ public class BookEntryEntity : NamedEntityBase
 
     [NotMapped]
     public BookEntryRevisionEntity LatestRevision => this.Revisions.OrderByDescending(x => x.Id).First();
-
-    [NotMapped]
-    public BookEntryRevisionEntity ActiveRevision => this.Revisions.First(x => x.Active);
 }

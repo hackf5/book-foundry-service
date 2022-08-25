@@ -28,7 +28,6 @@ public class BookMutation
             entry.Book = book;
 
             var revision = ctx.Revisions.AddProxy();
-            revision.Active = true;
             revision.Entry = entry;
             revision.Text = string.Empty;
 
@@ -51,13 +50,8 @@ public class BookMutation
         try
         {
             var entry = await ctx.Entries.FirstAsync(x => x.Id == input.EntryId, cancellation);
-            foreach (var r in entry.Revisions)
-            {
-                r.Active = false;
-            }
 
             var revision = ctx.Revisions.AddProxy();
-            revision.Active = true;
             revision.Entry = entry;
             revision.Text = input.Text;
 
@@ -109,35 +103,6 @@ public class BookMutation
         catch (QueryException)
         {
             throw;
-        }
-        catch (Exception ex)
-        {
-            throw QueryMessageException.New("An error occurred while updating the revision.", ex, context);
-        }
-    }
-
-    public async Task<ActivateRevisionOutput> ActivateRevisionAsync(
-        ActivateRevisionInput input,
-        [Service] ApplicationDbContext ctx,
-        IResolverContext context,
-        CancellationToken cancellation)
-    {
-        try
-        {
-            var revision = await ctx.Revisions
-                .Include(x => x.Entry.Revisions)
-                .FirstAsync(x => x.Id == input.RevisionId, cancellation);
-
-            foreach (var r in revision.Entry.Revisions)
-            {
-                r.Active = false;
-            }
-
-            revision.Active = true;
-
-            await ctx.SaveChangesAsync(cancellation);
-
-            return new(revision.Id);
         }
         catch (Exception ex)
         {
