@@ -13,6 +13,8 @@ public class BookEntryEntity : NamedEntityBase
 
     public int Index { get; set; }
 
+    public DateTime? Deleted { get; set; }
+
     [NotMapped]
     public BookEntryEntity? Next => this.Book.Entries
         .OrderBy(x => x.Index)

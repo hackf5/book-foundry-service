@@ -35,6 +35,10 @@ public class BookMutation
 
             return new(book.Id);
         }
+        catch (QueryException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             throw QueryMessageException.New("An error occurred while creating the book.", ex, context);
@@ -64,6 +68,74 @@ public class BookMutation
 
             return new(entry.Id);
         }
+        catch (QueryException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw QueryMessageException.New("An error occurred while creating the entry.", ex, context);
+        }
+    }
+
+    public async Task<CreateEntryOutput> DeleteEntryAsync(
+        DeleteEntryInput input,
+        [Service] ApplicationDbContext ctx,
+        IResolverContext context,
+        CancellationToken cancellation)
+    {
+        try
+        {
+            var entry = await ctx.Entries.FirstAsync(x => x.Id == input.EntryId, cancellation);
+
+            AssertEntryNotDeleted(context, entry);
+
+            entry.Deleted = DateTime.UtcNow;
+
+            await ctx.SaveChangesAsync(cancellation);
+
+            return new(entry.Id);
+        }
+        catch (QueryException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw QueryMessageException.New("An error occurred while creating the entry.", ex, context);
+        }
+    }
+
+    public async Task<CreateEntryOutput> RestoreEntryAsync(
+        RestoreEntryInput input,
+        [Service] ApplicationDbContext ctx,
+        IResolverContext context,
+        CancellationToken cancellation)
+    {
+        try
+        {
+            var entry = await ctx.Entries.FirstAsync(x => x.Id == input.EntryId, cancellation);
+
+            if (entry.Deleted is null)
+            {
+                throw new QueryException(
+                    ErrorBuilder.New()
+                    .SetMessage($"The entry is not deleted.")
+                    .SetCode($"-{nameof(entry.Deleted)}")
+                    .SetPath(context.Path)
+                    .Build());
+            }
+
+            entry.Deleted = null;
+
+            await ctx.SaveChangesAsync(cancellation);
+
+            return new(entry.Id);
+        }
+        catch (QueryException)
+        {
+            throw;
+        }
         catch (Exception ex)
         {
             throw QueryMessageException.New("An error occurred while creating the entry.", ex, context);
@@ -80,6 +152,8 @@ public class BookMutation
         {
             var entry = await ctx.Entries.FirstAsync(x => x.Id == input.EntryId, cancellation);
 
+            AssertEntryNotDeleted(context, entry);
+
             var revision = ctx.Revisions.AddProxy();
             revision.Entry = entry;
             revision.Text = input.Text;
@@ -91,6 +165,10 @@ public class BookMutation
                 revision.EntryId,
                 revision.Id,
                 revision.ConcurrencyToken);
+        }
+        catch (QueryException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -107,6 +185,9 @@ public class BookMutation
         try
         {
             var entry = await ctx.Entries.FirstAsync(x => x.Id == input.EntryId, cancellation);
+
+            AssertEntryNotDeleted(context, entry);
+
             var revision = entry.LatestRevision;
 
             if (revision.ConcurrencyToken != input.ConcurrencyToken)
@@ -136,6 +217,19 @@ public class BookMutation
         catch (Exception ex)
         {
             throw QueryMessageException.New("An error occurred while updating the revision.", ex, context);
+        }
+    }
+
+    private static void AssertEntryNotDeleted(IResolverContext context, BookEntryEntity entry)
+    {
+        if (entry.Deleted is not null)
+        {
+            throw new QueryException(
+                ErrorBuilder.New()
+                .SetMessage($"The entry was deleted at {entry.Deleted:o}.")
+                .SetCode(nameof(entry.Deleted))
+                .SetPath(context.Path)
+                .Build());
         }
     }
 }
