@@ -45,6 +45,32 @@ public class BookMutation
         }
     }
 
+    public async Task<UpdateBookOutput> UpdateBookAsync(
+        UpdateBookInput input,
+        [Service] ApplicationDbContext ctx,
+        IResolverContext context,
+        CancellationToken cancellation)
+    {
+        try
+        {
+            var book = await ctx.Books.FirstAsync(x => x.Id == input.BookId);
+
+            book.Name = input.Name;
+
+            await ctx.SaveChangesAsync(cancellation);
+
+            return new(book.Id);
+        }
+        catch (QueryException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw QueryMessageException.New("An error occurred while updating the book.", ex, context);
+        }
+    }
+
     public async Task<CreateEntryOutput> CreateEntryAsync(
         CreateEntryInput input,
         [Service] ApplicationDbContext ctx,
@@ -75,6 +101,34 @@ public class BookMutation
         catch (Exception ex)
         {
             throw QueryMessageException.New("An error occurred while creating the entry.", ex, context);
+        }
+    }
+
+        public async Task<UpdateEntryOutput> UpdateEntryAsync(
+        UpdateEntryInput input,
+        [Service] ApplicationDbContext ctx,
+        IResolverContext context,
+        CancellationToken cancellation)
+    {
+        try
+        {
+            var entry = await ctx.Entries.FirstAsync(x => x.Id == input.EntryId, cancellation);
+
+            AssertEntryNotDeleted(context, entry);
+
+            entry.Name = input.Name;
+
+            await ctx.SaveChangesAsync(cancellation);
+
+            return new(entry.BookId, entry.Id);
+        }
+        catch (QueryException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw QueryMessageException.New("An error occurred while updating the entry.", ex, context);
         }
     }
 
