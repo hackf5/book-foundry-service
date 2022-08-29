@@ -104,7 +104,7 @@ public class BookMutation
         }
     }
 
-        public async Task<UpdateEntryOutput> UpdateEntryAsync(
+    public async Task<UpdateEntryOutput> UpdateEntryAsync(
         UpdateEntryInput input,
         [Service] ApplicationDbContext ctx,
         IResolverContext context,
@@ -121,6 +121,103 @@ public class BookMutation
             await ctx.SaveChangesAsync(cancellation);
 
             return new(entry.BookId, entry.Id);
+        }
+        catch (QueryException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw QueryMessageException.New("An error occurred while updating the entry.", ex, context);
+        }
+    }
+
+    public async Task<MoveEntryOutput> MoveEntryAsync(
+        MoveEntryInput input,
+        [Service] ApplicationDbContext ctx,
+        IResolverContext context,
+        CancellationToken cancellation)
+    {
+        try
+        {
+            var entry = await ctx.Entries.FirstAsync(x => x.Id == input.EntryId, cancellation);
+            var previousEntry = await ctx.Entries.FirstOrDefaultAsync(x => x.Id == input.PreviousEntryId, cancellation);
+
+            AssertEntryNotDeleted(context, entry);
+
+            if (previousEntry is not null && previousEntry.BookId != entry.BookId)
+            {
+                throw new QueryException(
+                    ErrorBuilder.New()
+                    .SetMessage($"The the entry and previous entry must belong to the same book.")
+                    .SetCode(nameof(entry.Book))
+                    .SetPath(context.Path)
+                    .Build());
+            }
+
+            var oldIndex = entry.Index;
+            var newIndex = previousEntry is not null ? previousEntry.Index + 1 : 0;
+
+            if (newIndex == oldIndex)
+            {
+                // nothing.
+            }
+            else if (newIndex < oldIndex)
+            {
+                var entries = entry.Book.Entries
+                    .OrderBy(x => x.Index)
+                    .SkipWhile(x => x.Index < newIndex)
+                    .TakeWhile(x => x.Index < oldIndex)
+                    .ToArray();
+
+                var i = -1;
+                foreach (var item in entries)
+                {
+                    item.Index = i--;
+                }
+
+                entry.Index = newIndex;
+
+                await ctx.SaveChangesAsync(cancellation);
+
+                i = newIndex;
+                foreach (var item in entries)
+                {
+                    item.Index = ++i;
+                }
+
+                await ctx.SaveChangesAsync(cancellation);
+            }
+            else
+            {
+                --newIndex;
+                var entries = entry.Book.Entries
+                    .OrderBy(x => x.Index)
+                    .SkipWhile(x => x.Index <= oldIndex)
+                    .TakeWhile(x => x.Index <= newIndex)
+                    .Reverse()
+                    .ToArray();
+
+                var i = -1;
+                foreach (var item in entries)
+                {
+                    item.Index = i--;
+                }
+
+                entry.Index = newIndex;
+
+                await ctx.SaveChangesAsync(cancellation);
+
+                i = newIndex;
+                foreach (var item in entries)
+                {
+                    item.Index = --i;
+                }
+
+                await ctx.SaveChangesAsync(cancellation);
+            }
+
+            return new(entry.BookId, entry.Id, oldIndex, newIndex);
         }
         catch (QueryException)
         {
@@ -242,7 +339,7 @@ public class BookMutation
 
             AssertEntryNotDeleted(context, entry);
 
-            var revision = entry.LatestRevision;
+            var revision = entry.LatestRevision();
 
             if (revision.ConcurrencyToken != input.ConcurrencyToken)
             {

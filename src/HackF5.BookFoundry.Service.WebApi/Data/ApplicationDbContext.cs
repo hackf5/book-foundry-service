@@ -1,9 +1,5 @@
 namespace HackF5.BookFoundry.Service.WebApi.Data;
 
-using System.Security.Cryptography.X509Certificates;
-
-using Articulum.Core.Data.Tools;
-
 public class ApplicationDbContext : ApplicationDbContextBase
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)

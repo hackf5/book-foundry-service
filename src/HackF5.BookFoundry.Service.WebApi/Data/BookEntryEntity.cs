@@ -15,22 +15,19 @@ public class BookEntryEntity : NamedEntityBase
 
     public DateTime? Deleted { get; set; }
 
-    [NotMapped]
-    public BookEntryEntity? Next => this.Book.Entries
-        .OrderBy(x => x.Index)
-        .SkipWhile(x => x.Index <= this.Index)
-        .FirstOrDefault();
-
-    [NotMapped]
-    public BookEntryEntity? Previous => this.Book.Entries
-        .OrderByDescending(x => x.Index)
-        .SkipWhile(x => x.Index >= this.Index)
-        .FirstOrDefault();
-
     public virtual ICollection<BookEntryRevisionEntity> Revisions { get; } = new HashSet<BookEntryRevisionEntity>();
 
     public virtual ICollection<BookEntryTagEntity> Tags { get; } = new HashSet<BookEntryTagEntity>();
 
-    [NotMapped]
-    public BookEntryRevisionEntity LatestRevision => this.Revisions.OrderByDescending(x => x.Id).First();
+    public BookEntryEntity? Next() => this.Book.Entries
+        .OrderBy(x => x.Index)
+        .SkipWhile(x => x.Index <= this.Index)
+        .FirstOrDefault();
+
+    public BookEntryEntity? Previous() => this.Book.Entries
+        .OrderByDescending(x => x.Index)
+        .SkipWhile(x => x.Index >= this.Index)
+        .FirstOrDefault();
+
+    public BookEntryRevisionEntity LatestRevision() => this.Revisions.OrderByDescending(x => x.Id).First();
 }

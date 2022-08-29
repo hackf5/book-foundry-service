@@ -27,7 +27,11 @@ builder
     .UseMinimalHttpClientLogging()
     .AddNpgsqlDbContext<ApplicationDbContext>(
         connectionString,
-        new() { NpgsqlOptionsAction = o => { } })
+        new()
+        {
+            NpgsqlOptionsAction = o => { },
+            EnableSensitiveDataLogging = true,
+        })
     .AddGraphQLServer()
     .BuildDefaultSchema();
 

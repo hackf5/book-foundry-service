@@ -1,8 +1,8 @@
 namespace HackF5.BookFoundry.Service.WebApi.GraphQL.Model;
 
-public class UpdateEntryInput
+public class MoveEntryInput
 {
     public int EntryId { get; set; }
 
-    public string Name { get; set; } = default!;
+    public int? PreviousEntryId { get; set; }
 }
